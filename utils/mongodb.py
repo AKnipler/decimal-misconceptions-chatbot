@@ -20,7 +20,7 @@ def check_identifier(connection_string, identifier):
     except Exception:
         # If MongoDB connection fails, fall back to simple validation
         # This makes the chatbot work even without proper MongoDB setup
-        return len(identifier.strip()) >= 3
+        return False # len(identifier.strip()) >= 3
     finally:
         try:
             client.close()
