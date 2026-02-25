@@ -14,7 +14,7 @@ def check_identifier(connection_string, identifier):
     # Try to connect to MongoDB and check if identifier exists
     try:
         client = get_mongo_client(connection_string)
-        db = client.physiobot
+        db = client.decmisbot
         result = db.valid_identifiers.find_one({"identifier": identifier})
         return bool(result)
     except Exception:

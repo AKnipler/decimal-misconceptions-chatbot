@@ -21,7 +21,7 @@ def setup_session_state():
         # Load the prompt from the prompt.txt file
         prompt_path = os.path.join(os.path.dirname(__file__), "prompts", "prompt.txt")
         try:
-            with open(prompt_path, "r") as file:
+            with open(prompt_path, "r", encoding="utf-8") as file:
                 st.session_state["chatbot_prompt"] = file.read()
         except FileNotFoundError:
             st.error("Prompt file not found. Please ensure prompt.txt exists in the prompts directory.")
