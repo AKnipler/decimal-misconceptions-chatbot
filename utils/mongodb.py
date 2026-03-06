@@ -1,5 +1,7 @@
 from pymongo import MongoClient
 from pymongo.server_api import ServerApi
+import streamlit as st
+from datetime import datetime
 
 def get_mongo_client(connection_string):
     return MongoClient(connection_string, server_api=ServerApi('1'))
@@ -26,3 +28,22 @@ def check_identifier(connection_string, identifier):
             client.close()
         except:
             pass
+
+
+def log_transcript(connection_string, conversation_type, messages):
+    client = get_mongo_client(connection_string)
+    db = client.decmisbot
+    collection = db.transcripts
+
+    try:
+        # Create new document for previous conversation
+        document = {
+            "timestamp": datetime.utcnow(),
+            "messages": messages,
+            "identifier": st.session_state.get("user_identifier", "anonymous")
+        }
+        result = collection.insert_one(document)
+        return str(result.inserted_id)
+        
+    finally:
+        client.close()

@@ -1,6 +1,6 @@
 import streamlit as st
 from openai import OpenAI
-from utils.mongodb import check_identifier
+from utils.mongodb import check_identifier, log_transcript
 import os
 
 def setup_session_state():
@@ -11,11 +11,17 @@ def setup_session_state():
     if "user_identifier" not in st.session_state:
         st.session_state["user_identifier"] = ""
 
+    if "conversation_finished" not in st.session_state:
+        st.session_state["conversation_finished"] = False
+
     if "chat_history" not in st.session_state:
         st.session_state["chat_history"] = []
 
     if "response_counter" not in st.session_state:
         st.session_state["response_counter"] = 0
+        
+    if "session_id" not in st.session_state:
+        st.session_state["session_id"] = None
 
     if "chatbot_prompt" not in st.session_state:
         # Load the prompt from the prompt.txt file
@@ -62,6 +68,7 @@ def login_page():
                 st.session_state["user_identifier"] = identifier
                 st.session_state["logged_in"] = True
                 st.success("✅ Login successful! Redirecting to chat...")
+                st.session_state.conversation_finished = False
                 st.rerun()
             else:
                 st.error("❌ Invalid identifier. Please check your identifier and try again.")
@@ -78,10 +85,17 @@ def chat_page(client):
     # Logout button
     col1, col2, col3 = st.columns([1, 1, 1])
     with col3:
-        if st.button("Logout", key="logout"):
+        if st.button("Logout", key="logout") and st.session_state.chat_history and not st.session_state.conversation_finished:
+            st.session_state.conversation_finished = True
             st.session_state["logged_in"] = False
-            st.session_state["chat_history"] = []
-            st.session_state["response_counter"] = 0
+            session_id = log_transcript(
+                st.session_state["mongodb_uri"],
+                "em",
+                st.session_state.chat_history
+            )
+            st.session_state.session_id = session_id 
+            st.session_state["chat_history"] = [] 
+            st.session_state["response_counter"] = 0  
             st.rerun()
 
     st.markdown("---")
